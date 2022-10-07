@@ -5,6 +5,7 @@ from django.db import models
 from PIL import Image
 import os
 from django.conf import settings
+from django.utils.text import slugify
 
 
 class Product(models.Model):
@@ -17,7 +18,8 @@ class Product(models.Model):
     prod_image = models.ImageField(
         upload_to='product_image/%Y/%m',
         blank=True, null=True, verbose_name='Image')
-    prod_slug = models.SlugField(unique=True, verbose_name='Slug')
+    prod_slug = models.SlugField(
+        unique=True, blank=True, null=True, verbose_name='Slug')
     prod_price = models.FloatField(verbose_name='Price')
     prod_price_sale = models.FloatField(default=0, verbose_name='Sale price')
     prod_type = models.CharField(
@@ -29,6 +31,9 @@ class Product(models.Model):
         verbose_name='Product type',)
 
     def save(self, *args, **kwargs):
+        if not self.prod_slug:
+            slug = f'{slugify(self.prod_name)}'
+            self.prod_slug = slug
         super().save(*args, **kwargs)
         max_image_size = 800
         if self.prod_image:
